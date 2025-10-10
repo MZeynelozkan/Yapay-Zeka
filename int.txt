@@ -1,0 +1,78 @@
+SOM (Self-Organizing Map):
+- 2D grid şeklinde yapay sinir ağı.
+- Her node, veri uzayındaki bir ağırlık vektörünü temsil eder.
+- Benzer veriler harita üzerinde birbirine yakın node’larda gruplanır.
+- Veri boyutunu düşürmek ve kümeleme/analiz yapmak için kullanılır.
+
+BMU (Best Matching Unit):
+- Her veri noktası için SOM üzerindeki en yakın node.
+- BMU indeksi, veri noktasının harita üzerindeki konumunu gösterir.
+- SOM eğitiminde ve kümelemede temel referans noktasıdır.
+
+PBC (Periodic Boundary Conditions):
+- Harita kenarlarının birbirine bağlı olduğunu varsayar (torus/simit gibi).
+- Kenardaki node’lar da ortadaki node’lar gibi komşuluk ilişkisine dahil olur.
+- Kenar etkisini azaltır ve öğrenmeyi daha düzgün hale getirir.
+
+
+
+
+1️⃣ SOM ve BMU ile başlıyoruz
+
+SOM (Self-Organizing Map): Verileri 2D bir haritada gruplaştıran bir ağ.
+
+Benzer veriler harita üzerinde birbirine yakın node’lara yerleşir.
+
+Örnek: Düşük kaza sayısına sahip havayolları bazı node’larda, yüksek kaza sayısına sahipler başka node’larda toplanır.
+
+BMU (Best Matching Unit):
+
+Her veri noktasının haritada en yakın node’u.
+
+Bu node, o veriyi temsil eder.
+
+2️⃣ KMeans ile cluster’lar
+
+BMU indeksleri kullanılarak SOM üzerindeki node’lar gruplandırılıyor.
+
+Burada n_clusters=3 dedik → 3 risk grubu oluşacak.
+
+⚠️ Önemli nokta: KMeans cluster numaraları rastgele atanır
+
+Örnek: Küme 0 = düşük risk, Küme 1 = orta risk, Küme 2 = yüksek risk
+
+Ama algoritma bunu otomatik olarak “küçükten büyüğe” sıralamaz.
+
+Yani “Cluster 0 en güvenli” demek etiketlerin rastgele gelmesiyle aynı şey değil, sadece BMU’ların KMeans’e atanma sırasına göre geldi.
+
+3️⃣ Cluster numaralarını sıralamak istiyorsan
+
+Her cluster için bir kriter seç (örneğin fatalities_00_14 ortalaması).
+
+Cluster’ları bu ortalama değere göre küçükten büyüğe sırala.
+
+Etiketleri yeniden eşle (map() ile).
+
+Kısa örnek:
+
+# Cluster başına ortalama fatalities
+cluster_mean = veri.groupby("cluster")["fatalities_00_14"].mean().sort_values()
+
+# Küçükten büyüğe yeni etiketler oluştur
+mapping = {old_label: new_label for new_label, old_label in enumerate(cluster_mean.index)}
+veri["cluster_sorted"] = veri["cluster"].map(mapping)
+
+
+Böylece cluster_sorted artık risk seviyesine göre küçükten büyüğe sıralanmış olur.
+
+💡 Özet kanka:
+
+SOM → verileri 2D haritada gruplaştırır (benzerler yakın).
+
+BMU → her veri noktası için en yakın node.
+
+KMeans → BMU’ları gruplara ayırır.
+
+Cluster numarası = risk seviyesi değildir; sadece algoritmanın verdiği bir etiket.
+
+Risk sıralaması yapmak istiyorsan ortalama değer üzerinden yeniden etiketleme gerekir.
