@@ -4,7 +4,8 @@ from sklearn.cluster import KMeans
 import numpy as np
 
 # CSV dosya yolu
-file_path = "C:/Users/Zeynel/Desktop/Yapay Zeka/Mall_Customers.csv"
+
+file_path = "/Users/mehmetzeynelozkan/Desktop/Yapay-Zeka/Mall_Customers.csv"
 
 # Veriyi oku
 veri = pd.read_csv(file_path)
