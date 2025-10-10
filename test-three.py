@@ -1,75 +1,102 @@
-# =============================================
-#  Uygulama 5 – SOM ile Uçak Güvenliği Kümeleme (MiniSom + KaggleHub)
-#  (Yalnızca terminal çıktısı)
-# =============================================
-
-# pip install minisom scikit-learn pandas kagglehub[pandas-datasets]
-
+# ----------------------------
+# Kütüphaneler
+# ----------------------------
 import pandas as pd
-from minisom import MiniSom
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.cluster import KMeans
-import kagglehub
-from kagglehub import KaggleDatasetAdapter
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.utils import to_categorical
+import matplotlib.pyplot as plt
 
-# 1️⃣ Kaggle'dan veri setini indir
-print("📥 Veri Kaggle'dan indiriliyor...")
-file_path = "airline-safety.csv"  # veri seti içindeki dosya adı
+# ----------------------------
+# Veri Setini Yükleme
+# ----------------------------
+veriler = pd.read_csv("data.csv")  # Aynı klasördeki dosya
 
-df = kagglehub.load_dataset(
-    KaggleDatasetAdapter.PANDAS,
-    "fivethirtyeight/fivethirtyeight-airline-safety-dataset",
-    file_path
+# ----------------------------
+# Özellikler ve Hedef
+# ----------------------------
+x = veriler.drop(["price_range"], axis=1)
+y = veriler["price_range"]
+
+# ----------------------------
+# Standartlaştırma
+# ----------------------------
+sc = StandardScaler()
+x = sc.fit_transform(x)
+
+# ----------------------------
+# Train/Test Split
+# ----------------------------
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+
+# ----------------------------
+# One-Hot Encoding
+# ----------------------------
+classes = sorted(y.unique())
+print(len(classes))
+y_train = to_categorical(y_train, num_classes=len(classes))
+y_test = to_categorical(y_test, num_classes=len(classes))
+
+print("Benzersiz Price Range değerleri:", classes)
+print("Toplam sınıf sayısı:", len(classes))
+
+# ----------------------------
+# Modelin Oluşturulması
+# ----------------------------
+model = Sequential()
+model.add(Dense(64, activation='relu', input_dim=x_train.shape[1]))
+model.add(Dense(32, activation='relu'))
+model.add(Dense(len(classes), activation='softmax'))  # 4 sınıf
+
+# ----------------------------
+# Model Özeti
+# ----------------------------
+model.summary()
+
+# ----------------------------
+# Modelin Derlenmesi
+# ----------------------------
+model.compile(
+    optimizer='adam',
+    loss='categorical_crossentropy',
+    metrics=['accuracy']
 )
 
-print("✅ Veri başarıyla yüklendi!\n")
-
-# 2️⃣ Sayısal veriyi ayır
-airlines = df['airline']
-X = df.drop(columns=['airline'])
-
-# 3️⃣ Veriyi normalize et
-scaler = MinMaxScaler()
-X_scaled = scaler.fit_transform(X)
-
-# 4️⃣ SOM ağı oluştur
-som = MiniSom(
-    x=20, y=20,
-    input_len=X_scaled.shape[1],
-    sigma=1.0, learning_rate=0.01,
-    neighborhood_function='gaussian',
-    random_seed=42
+# ----------------------------
+# Modelin Eğitilmesi
+# ----------------------------
+history = model.fit(
+    x_train, y_train,
+    epochs=50,
+    batch_size=16,
+    validation_split=0.2,
+    verbose=1
 )
 
-# 5️⃣ Ağı eğit
-print("🧠 SOM eğitiliyor... (biraz sürebilir)")
-som.train_random(X_scaled, num_iteration=10000)
-print("✅ Eğitim tamamlandı!\n")
+# ----------------------------
+# Test Verisi Üzerinde Değerlendirme
+# ----------------------------
+loss, accuracy = model.evaluate(x_test, y_test)
+print("Test Kaybı:", loss)
+print("Test Doğruluğu:", accuracy)
 
-# 6️⃣ SOM çıktısını K-Means ile kümele
-kmeans = KMeans(n_clusters=3, random_state=42)
-cluster_labels = kmeans.fit_predict(X_scaled)
-df['cluster'] = cluster_labels
+# ----------------------------
+# Eğitim ve Doğrulama Grafikleri
+# ----------------------------
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.title('Model Doğruluğu')
+plt.ylabel('Doğruluk')
+plt.xlabel('Epoch')
+plt.legend(['Eğitim', 'Doğrulama'], loc='upper left')
+plt.show()
 
-# 7️⃣ Küme bazlı firmaları göster
-print("📊 Kümeleme Sonuçları:")
-for i in range(3):
-    firmalar = df[df['cluster'] == i]['airline'].values
-    print(f"\nKüme {i} ({len(firmalar)} firma):")
-    for f in firmalar:
-        print(f" - {f}")
-
-# 8️⃣ Küme ortalamaları (istatistiksel özet)
-print("\n📈 Küme Ortalamaları:")
-means = df.groupby('cluster')[
-    ['fatal_accidents_85_99', 'fatal_accidents_00_14',
-     'fatalities_85_99', 'fatalities_00_14']
-].mean()
-print(means)
-
-# 9️⃣ En güvenli kümeyi bul
-best_cluster = means.mean(axis=1).idxmin()
-print(f"\n✅ En güvenli havayolları kümesi: {best_cluster}")
-print("✈️ Bu kümeye ait firmalar:")
-for f in df[df['cluster'] == best_cluster]['airline'].values:
-    print(f" - {f}")
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('Model Kaybı')
+plt.ylabel('Kayıp')
+plt.xlabel('Epoch')
+plt.legend(['Eğitim', 'Doğrulama'], loc='upper left')
+plt.show()
