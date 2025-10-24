@@ -1,78 +1,152 @@
-SOM (Self-Organizing Map):
-- 2D grid şeklinde yapay sinir ağı.
-- Her node, veri uzayındaki bir ağırlık vektörünü temsil eder.
-- Benzer veriler harita üzerinde birbirine yakın node’larda gruplanır.
-- Veri boyutunu düşürmek ve kümeleme/analiz yapmak için kullanılır.
+🧠 1. Uzman Sistem Nedir?
 
-BMU (Best Matching Unit):
-- Her veri noktası için SOM üzerindeki en yakın node.
-- BMU indeksi, veri noktasının harita üzerindeki konumunu gösterir.
-- SOM eğitiminde ve kümelemede temel referans noktasıdır.
+Uzman sistem, belirli bir konuda (örneğin: tıp, trafik, tarım, hukuk) insan uzmanların bilgi ve kurallarını kullanarak karar verebilen bir yapay zekâ türüdür.
 
-PBC (Periodic Boundary Conditions):
-- Harita kenarlarının birbirine bağlı olduğunu varsayar (torus/simit gibi).
-- Kenardaki node’lar da ortadaki node’lar gibi komşuluk ilişkisine dahil olur.
-- Kenar etkisini azaltır ve öğrenmeyi daha düzgün hale getirir.
+Yani:
 
+Uzman sistem = Bilgi tabanı (kurallar) + Çıkarım motoru (mantık yürüten beyin)
 
+Bileşenleri:
+Bileşen	Görevi
+Bilgi tabanı (Knowledge Base)	Uzmanın kuralları ve bilgileridir. (örnek: “Eğer ışık kırmızıysa dur.”)
+Çıkarım motoru (Inference Engine)	Bu kuralları çalıştıran, mantık yürüten kısımdır.
+Kullanıcı arayüzü	Kullanıcıdan veri alır, sonucu gösterir.
+Açıklama sistemi (isteğe bağlı)	“Neden bu kararı verdiğini” açıklar.
+🚦 2. Kodda ne oluyor?
 
+Kodun tamamını adım adım inceleyelim.
 
-1️⃣ SOM ve BMU ile başlıyoruz
-
-SOM (Self-Organizing Map): Verileri 2D bir haritada gruplaştıran bir ağ.
-
-Benzer veriler harita üzerinde birbirine yakın node’lara yerleşir.
-
-Örnek: Düşük kaza sayısına sahip havayolları bazı node’larda, yüksek kaza sayısına sahipler başka node’larda toplanır.
-
-BMU (Best Matching Unit):
-
-Her veri noktasının haritada en yakın node’u.
-
-Bu node, o veriyi temsil eder.
-
-2️⃣ KMeans ile cluster’lar
-
-BMU indeksleri kullanılarak SOM üzerindeki node’lar gruplandırılıyor.
-
-Burada n_clusters=3 dedik → 3 risk grubu oluşacak.
-
-⚠️ Önemli nokta: KMeans cluster numaraları rastgele atanır
-
-Örnek: Küme 0 = düşük risk, Küme 1 = orta risk, Küme 2 = yüksek risk
-
-Ama algoritma bunu otomatik olarak “küçükten büyüğe” sıralamaz.
-
-Yani “Cluster 0 en güvenli” demek etiketlerin rastgele gelmesiyle aynı şey değil, sadece BMU’ların KMeans’e atanma sırasına göre geldi.
-
-3️⃣ Cluster numaralarını sıralamak istiyorsan
-
-Her cluster için bir kriter seç (örneğin fatalities_00_14 ortalaması).
-
-Cluster’ları bu ortalama değere göre küçükten büyüğe sırala.
-
-Etiketleri yeniden eşle (map() ile).
-
-Kısa örnek:
-
-# Cluster başına ortalama fatalities
-cluster_mean = veri.groupby("cluster")["fatalities_00_14"].mean().sort_values()
-
-# Küçükten büyüğe yeni etiketler oluştur
-mapping = {old_label: new_label for new_label, old_label in enumerate(cluster_mean.index)}
-veri["cluster_sorted"] = veri["cluster"].map(mapping)
+a. Gerekli modüller
+from random import choice
+from experta import *
 
 
-Böylece cluster_sorted artık risk seviyesine göre küçükten büyüğe sıralanmış olur.
+random.choice: Python’un rastgele seçim yapan fonksiyonu.
 
-💡 Özet kanka:
+experta: Uzman sistem kuralları yazmayı kolaylaştıran bir Python kütüphanesi.
 
-SOM → verileri 2D haritada gruplaştırır (benzerler yakın).
+b. Bilgi Tanımı (Fact)
+class Isik(Fact):
+    """Trafik isiklariyla ilgili genel bilgiler"""
+    pass
 
-BMU → her veri noktası için en yakın node.
 
-KMeans → BMU’ları gruplara ayırır.
+Fact: experta’daki “bilgi” birimidir.
+Yani sistemin bildiği bir durum veya veri parçası.
 
-Cluster numarası = risk seviyesi değildir; sadece algoritmanın verdiği bir etiket.
+Bu örnekte, Isik adlı bilgi, bir trafik ışığının rengine sahip olabilir.
+Örneğin:
 
-Risk sıralaması yapmak istiyorsan ortalama değer üzerinden yeniden etiketleme gerekir.
+Isik(renk="kirmizi")
+
+c. Bilgiye Göre Kurallar (Rules)
+class KarsidanKarsiyaGecme(KnowledgeEngine):
+
+
+Bu sınıf, çıkarım motorudur — yani kuralların çalıştığı yer.
+
+Kurallar:
+@Rule(Isik(renk="yesil"))
+def yesil(self):
+    print("Işık yeşil: Güvenli bir şekilde karşıya geçebilirsin. 👣")
+
+
+Bu, bir “Eğer – O zaman” (IF–THEN) kuralıdır.
+
+Eğer sistemde bir Isik nesnesi varsa ve renk="yesil" ise → bu fonksiyon çalışır.
+
+Aynısı diğer renkler için de var:
+
+@Rule(Isik(renk="kirmizi"))
+@Rule(Isik(renk="sari"))
+
+
+Yani kural tabanı şöyle özetlenebilir:
+
+Eğer (IF)	O zaman (THEN)
+Işık yeşil	Karşıya geç
+Işık kırmızı	Dur
+Işık sarı	Dikkat et, hazırlan
+d. Çalıştırma Kısmı
+uzman = KarsidanKarsiyaGecme()
+uzman.reset()
+
+
+uzman adlı bir bilgi motoru oluşturuluyor.
+
+.reset() → önceki bilgiler temizleniyor.
+
+e. Bilgi Ekleme (Fact Declaration)
+uzman.declare(Isik(renk=choice(["yesil", "kirmizi", "sari"])))
+
+
+Burada:
+
+choice(["yesil", "kirmizi", "sari"]) → listedeki üç renkten rastgele birini seçiyor.
+
+Örneğin Python o anda "kirmizi" seçerse:
+
+Isik(renk="kirmizi")
+
+
+fact olarak sisteme ekleniyor.
+
+Bu sayede sistem her çalıştırıldığında farklı bir trafik ışığı rengi seçiliyor.
+
+f. Kural Çalıştırma
+uzman.run()
+
+
+Çıkarım motoru başlatılır.
+
+Tüm kurallar tek tek incelenir.
+
+Hangisi uygun (eşleşen Fact varsa) → o kuralın fonksiyonu çalışır.
+
+Yani:
+
+Eğer fact Isik(renk="kirmizi") → kirmizi() fonksiyonu çalışır.
+
+Eğer Isik(renk="yesil") → yesil() fonksiyonu çalışır.
+
+vb.
+
+🎲 3. “Işık rengi neye göre rastgele geliyor?”
+
+Bu satır yüzünden:
+
+choice(["yesil", "kirmizi", "sari"])
+
+
+Python’un random modülündeki choice() fonksiyonu listedeki elemanlardan birini her çalıştırmada rastgele seçer.
+Yani bazen "yesil", bazen "kirmizi", bazen "sari" gelir.
+
+O yüzden her program çalıştırıldığında çıktı farklı olur.
+Örneğin:
+
+Işık kırmızı: Dur! Karşıya geçmek tehlikeli. 🚫
+
+
+ya da
+
+Işık yeşil: Güvenli bir şekilde karşıya geçebilirsin. 👣
+
+🧩 4. Özetle Bu Program Ne Yapıyor?
+Aşama	İşlem
+1️⃣	Trafik ışığı renklerinden birini rastgele seçiyor.
+2️⃣	Bu bilgiyi sisteme bir Fact olarak veriyor.
+3️⃣	Bilgi motoru (KnowledgeEngine) o renge uygun kuralı çalıştırıyor.
+4️⃣	Kullanıcıya uygun mesajı gösteriyor.
+🚀 5. Ekstra Bilgi: Bu sistem nasıl genişletilir?
+
+Sen bu sisteme yeni kurallar ekleyebilirsin.
+Örneğin hava durumu, trafik yoğunluğu gibi başka faktörleri de ekleyebilirsin:
+
+@Rule(Isik(renk="yesil"), Fact(hava="yagmurlu"))
+def yagmurlu_gecis(self):
+    print("Işık yeşil ama zemin kaygan, dikkatli geç! 🌧️")
+
+
+Yani uzman sistem mantığı şudur:
+
+“Eğer şu durumlar varsa, o zaman şu sonucu üret.”
