@@ -1,0 +1,130 @@
+CNN ile Sınıflandırma – Adım Adım Açıklama
+1️⃣ Veri Yükleme ve Hazırlama
+
+Eğitim ve test verileri CSV dosyalarından yükleniyor.
+
+species etiketi sayısal değerlere dönüştürülüyor (LabelEncoder) çünkü sinir ağı sayısal etiketlerle çalışır.
+
+id sütunu ve species etiketi model girişinden çıkarılıyor.
+
+Özellik sayısı (nb_features) ve sınıf sayısı (nb_classes) belirleniyor.
+
+Amaç: Model sadece özellikleri kullanarak sınıfları tahmin edebilsin.
+
+2️⃣ Verilerin Ölçeklenmesi
+
+StandardScaler ile özellikler standartlaştırılıyor (ortalama 0, standart sapma 1).
+
+Neden?
+
+CNN ve Dense katmanları farklı ölçeklerdeki girişleri daha zor öğrenir.
+
+Ölçekleme öğrenmeyi hızlandırır ve daha kararlı hale getirir.
+
+3️⃣ Eğitim ve Doğrulama Verisine Bölme
+
+Eğitim verisinin %10’u doğrulama seti olarak ayrılıyor (train_test_split).
+
+Amaç: Modelin gerçek performansını görmek için eğitim dışında bir veri seti üzerinde test yapmak.
+
+4️⃣ Kategorik Dönüşüm
+
+y_train ve y_valid to_categorical ile one-hot encoded hâle getiriliyor.
+
+Neden?
+
+Çok sınıflı sınıflandırma için categorical_crossentropy kayıp fonksiyonu one-hot encoding gerektirir.
+
+5️⃣ CNN Giriş Şekline Uyarlama
+
+CNN 1D olduğu için giriş verisi (örnek sayısı, özellik sayısı, 1 kanal) hâline getiriliyor.
+
+Neden?
+
+Conv1D katmanı 3D giriş bekler: (batch_size, time_steps/features, channels).
+
+6️⃣ Modelin Oluşturulması
+
+Model sırası ile şu katmanları içeriyor:
+
+Conv1D(512, 1) + ReLU:
+
+Özellikler üzerinde 1 boyutlu konvolüsyon, 512 filtre ile desen çıkarımı.
+
+MaxPooling1D(2):
+
+Boyutu yarıya düşürür, önemli özellikleri öne çıkarır.
+
+Conv1D(256, 1):
+
+Daha fazla özellik öğrenimi için ikinci konvolüsyon katmanı.
+
+MaxPooling1D(2) + Dropout(0.25):
+
+Boyutu küçültür ve overfitting’i azaltmak için rastgele nöronları kapatır.
+
+Flatten:
+
+1D çıktı vektörünü Dense katmanına bağlamak için düzleştirir.
+
+Dense(2048) + ReLU + Dense(1024) + ReLU:
+
+Tam bağlantılı katmanlar, sınıflandırma öncesi yüksek boyutlu özellik öğrenimi sağlar.
+
+Dense(nb_classes) + Softmax:
+
+Sınıfları olasılık olarak tahmin eder.
+
+7️⃣ Modelin Derlenmesi ve Eğitilmesi
+
+Kayıp fonksiyonu: categorical_crossentropy
+
+Optimizasyon: adam
+
+Metric: accuracy
+
+Neden?
+
+Adam: hızlı ve adaptif öğrenme, çoğu CNN için varsayılan.
+
+Categorical Crossentropy: çok sınıflı sınıflandırmada standart kayıp fonksiyonu.
+
+Model 15 epoch boyunca eğitiliyor ve her epoch sonunda doğrulama başarımı ölçülüyor.
+
+8️⃣ Ortalama Değerlerin Gösterilmesi
+
+Eğitim kaybı, doğruluk ve doğrulama kaybı, doğruluk ortalamaları hesaplanıyor.
+
+Amaç: genel performansı görmek.
+
+9️⃣ Sonuçların Grafik ile Gösterilmesi
+
+Kayıp grafiği: eğitim ve doğrulama kaybının epoch’a göre değişimi.
+
+Başarım grafiği: eğitim ve doğrulama doğruluklarının epoch’a göre değişimi.
+
+Neden?
+
+Overfitting veya underfitting’i görsel olarak kontrol etmek.
+
+Modelin öğrenme eğrisini incelemek.
+
+🔹 Özet
+
+Veriler yüklenir, etiketler sayısal hale getirilir ve ölçeklenir.
+
+Eğitim ve doğrulama verisi ayrılır.
+
+CNN için giriş şekline dönüştürülür.
+
+1D CNN modeli oluşturulur: Conv1D → MaxPooling → Dropout → Flatten → Dense → Softmax.
+
+Model adam ile derlenir ve 15 epoch boyunca eğitilir.
+
+Eğitim ve doğrulama kaybı ile doğruluğu grafik üzerinde gösterilir.
+
+CNN Nedir?
+
+Convolutional Neural Network, özellikle sıralı veya görüntü verilerinde desenleri öğrenir.
+
+1D CNN: özellik dizilerinde veya zaman serisi verilerinde kullanılır.

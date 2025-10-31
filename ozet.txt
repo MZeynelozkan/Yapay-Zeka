@@ -1,0 +1,133 @@
+1️⃣ Yapay Veri Setinin Oluşturulması
+
+1000 örnek ve 90 özellikten oluşan rastgele bir eğitim veri seti ve 200 örnekten oluşan test veri seti oluşturuluyor.
+
+Her örnek 5 farklı sınıftan (class_A, class_B …) birine ait olacak şekilde etiketleniyor.
+
+Amaç: modelin çok sınıflı (multi-class) sınıflandırma problemini test etmek.
+
+Veri seti CSV olarak kaydediliyor, böylece sonraki adımda okunabilir.
+
+Teknik Notlar:
+
+np.random.seed(42): rastgele sayı üretiminde tutarlılık sağlar, herkes aynı veriyi üretebilir.
+
+Rastgele veri ve sınıflar, modelin çalışmasını test etmek için simüle edilmiş veri sağlar.
+
+2️⃣ Verilerin Yüklenmesi ve Ön İşlenmesi
+
+CSV’den veri yükleniyor, species etiketi sayısal hale (LabelEncoder) getiriliyor.
+
+id ve species sütunları modelden çıkarılıyor, çünkü model sadece özelliklerle çalışacak.
+
+Özellikler StandardScaler ile standartlaştırılıyor (ortalama 0, standart sapma 1 olacak şekilde).
+
+Teknik Notlar:
+
+LabelEncoder: sınıfları sayısal değere çevirir → model categorical_crossentropy için sayısal sınıf istiyor.
+
+StandardScaler: CNN ve Dense katmanları için giriş değerlerinin benzer ölçeklerde olması öğrenmeyi hızlandırır.
+
+3️⃣ K-Fold Cross Validation (Çapraz Doğrulama)
+
+Veri 5 parçaya bölünüyor (KFold), her seferinde 4 parça eğitim, 1 parça doğrulama için kullanılıyor.
+
+Amaç: modelin farklı veri alt kümelerinde nasıl performans gösterdiğini görmek.
+
+CNN Modeli:
+
+Conv1D: 1 boyutlu konvolüsyon, özellikle sıralı veya özellik vektörlerinde önemli desenleri bulmak için.
+
+MaxPooling1D: özetleme katmanı, boyutu düşürür ve önemli özellikleri öne çıkarır.
+
+Dropout: %25 oranında rastgele nöronları kapatarak overfitting’i önler.
+
+Flatten: 1D konvolüsyondan gelen çıktıyı düzleştirir, Dense katmana bağlanabilir hâle getirir.
+
+Dense: klasik tam bağlantılı katman, sınıflandırma yapmak için.
+
+Softmax: çok sınıflı çıktı olasılıklarını verir.
+
+Teknik Notlar:
+
+Her fold için model sıfırdan oluşturuluyor ve eğitiliyor.
+
+categorical_crossentropy: çok sınıflı sınıflandırma için kayıp fonksiyonu.
+
+accuracy metric’i: doğruluğu ölçüyor.
+
+4️⃣ F1, Precision, Recall, Specificity
+
+Modelin son fold üzerindeki tahminleri ile classification_report oluşturuluyor.
+
+F1: precision ve recall’un harmonik ortalaması.
+
+Precision: doğru pozitiflerin tahmin edilen pozitiflere oranı.
+
+Recall: doğru pozitiflerin gerçek pozitiflere oranı.
+
+Specificity: doğru negatiflerin toplam negatiflere oranı.
+
+Teknik Notlar:
+
+Confusion matrix üzerinden TN, FP hesaplanarak specificity bulunuyor.
+
+Bu metrikler sınıf dengesizliği olan veri setleri için önemlidir.
+
+5️⃣ Diyabet Veri Seti ile 1D CNN
+
+load_diabetes veri seti ile gerçek veri üzerinde ikili sınıflandırma yapılıyor: hedef değer ortalamanın üzerinde mi?
+
+Özellikler standartlaştırılıyor ve 1D CNN için reshape ediliyor.
+
+CNN mimarisi daha basit: Conv1D → MaxPooling1D → Flatten → Dense → Softmax.
+
+Model 20 epoch boyunca eğitiliyor ve doğruluk, F1, precision, recall hesaplanıyor.
+
+Teknik Notlar:
+
+1D CNN, sıralı veya özellikler arası bağıntıları yakalamak için kullanılır.
+
+train_test_split: modeli eğitim ve doğrulama setine ayırır.
+
+Grafiklerle eğitim ve doğrulama doğruluk/kaybı görselleştirilir, overfitting veya underfitting kontrolü yapılır.
+
+6️⃣ Farklı Optimizasyon Algoritmalarının Karşılaştırılması
+
+4 farklı optimizer (Adam, SGD, RMSprop, Adagrad) deneniyor.
+
+Amaç: hangi optimizasyon algoritmasının model için en iyi doğruluk sağladığını görmek.
+
+Teknik Notlar:
+
+Adam: öğrenmeyi hızlandırır, çoğu durumda en iyi performans verir.
+
+SGD: klasik stokastik gradyan inişi, bazen yavaş ama stabildir.
+
+RMSprop: öğrenme oranını adaptif ayarlar, özellikle RNN/CNN’de iyi.
+
+Adagrad: sık kullanılan özellikler için öğrenme oranını düşürür, nadiren kullanılanlar için artırır.
+
+Sonuç olarak, her optimizer için doğrulama başarımı karşılaştırılır ve en iyi olan seçilir.
+
+Özet
+
+Yapay veri ile çok sınıflı sınıflandırma testi.
+
+Verilerin ölçeklenmesi ve sayısallaştırılması.
+
+CNN kullanarak K-Fold Cross Validation ile model performansı ölçümü.
+
+F1, precision, recall, specificity ile detaylı metrik analizi.
+
+Diyabet veri seti ile 1D CNN ile ikili sınıflandırma.
+
+Farklı optimizasyon algoritmalarıyla model performansını karşılaştırma.
+
+CNN nedir?
+
+Convolutional Neural Network (Konvolüsyonel Sinir Ağı)
+
+Özellikle görsel veya sıralı veri üzerinde önemli desenleri çıkarır.
+
+1D CNN, özellik dizilerini veya zaman serisi verilerini analiz etmek için kullanılır.
