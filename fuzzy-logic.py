@@ -69,7 +69,7 @@ ControlSystem: Kuralları ve girdileri alır
 ControlSystemSimulation: Girdiler verildiğinde çıktıyı hesaplar
 """
 bahsis_ctrl = ctrl.ControlSystem([kural1, kural2, kural3])
-bahsis_sim = ctrl.ControlSystemSimulation(bahsis_ctrl)
+
 
 # 6️⃣ Örnek veri seti
 # Her satır [servis puanı, yemek puanı]
