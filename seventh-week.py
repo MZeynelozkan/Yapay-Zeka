@@ -50,15 +50,6 @@ print(f"Toplam eğitim görüntüsü: {total_train}")
 print(f"Toplam doğrulama görüntüsü: {total_validate}")
 
 # === GÖRSEL ÖNİŞLEME ===
-train_datagen = ImageDataGenerator(
-    rotation_range=15,
-    rescale=1./255,
-    shear_range=0.1,
-    zoom_range=0.2,
-    horizontal_flip=True,
-    width_shift_range=0.1,
-    height_shift_range=0.1
-)
 
 validation_datagen = ImageDataGenerator(rescale=1./255)
 
