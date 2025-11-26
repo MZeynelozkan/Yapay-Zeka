@@ -24,7 +24,7 @@ train = train.drop(["id", "species"], axis=1)
 test = test.drop("id", axis=1)
 
 nb_features = train.shape[1]
-nb_classes = len(classes)
+
 
 # =====================================
 # VERİLERİN ÖLÇEKLENMESİ
