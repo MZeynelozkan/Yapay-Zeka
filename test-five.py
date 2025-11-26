@@ -19,7 +19,7 @@ X = veri.drop(["Genre", "Spending Score (1-100)"], axis=1)
 # SOM (Self-Organizing Map) ağı oluşturuyoruz
 # 20x20 boyutunda, Periodic Boundary Conditions (PBC) aktif
 # SOM ağı, girdiler arasındaki benzerlikleri öğrenmek ve 2D bir haritada gruplaşmalar oluşturmak için kullanılır
-net = sps.SOMNet(20, 20, X.values, PBC=True)
+
 # => net, SOM ağını temsil eder. Her node (düğüm) rastgele ağırlıklarla başlatılır
 
 # SOM'u eğitiyoruz (Batch eğitim varsayılan)
