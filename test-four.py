@@ -23,8 +23,7 @@ veriler = pd.read_csv(url, names=columns)
 # Label Encoding
 # ----------------------------
 label_encoder = LabelEncoder().fit(veriler.Outcome)
-labels = label_encoder.transform(veriler.Outcome)
-classes = list(label_encoder.classes_)
+
 
 # ----------------------------
 # Bağımsız ve bağımlı değişkenler
