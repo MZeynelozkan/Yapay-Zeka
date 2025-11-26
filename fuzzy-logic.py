@@ -21,7 +21,7 @@ Bu uygulamada:
 # Consequent -> Çıktı (output)
 servis = ctrl.Antecedent(np.arange(0, 11, 1), 'servis')  # 0-10 arası servis puanı
 yemek = ctrl.Antecedent(np.arange(0, 11, 1), 'yemek')    # 0-10 arası yemek puanı
-bahsis = ctrl.Consequent(np.arange(0, 26, 1), 'bahsis')  # 0-25 arası bahşiş
+
 
 # 2️⃣ Üyelik fonksiyonlarını tanımlama
 """
