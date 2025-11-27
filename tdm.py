@@ -18,7 +18,7 @@ tokenized_docs = [doc.lower().split() for doc in docs]
 # [['ben', 'elma', 'yedim'], ['elma', 'çok', 'güzel'], ['ben', 'güzel', 'elmayı', 'sevdim']]
 
 # 3️⃣ Kelime sözlüğünü (vocab) oluştur
-vocab = sorted(set(word for doc in tokenized_docs for word in doc))
+
 # Vocab örneği: ['ben', 'çok', 'elma', 'elmayı', 'güzel', 'sevdim', 'yedim']
 
 # 4️⃣ Boş matris oluştur (belge sayısı x kelime sayısı)
